@@ -4,15 +4,12 @@ import projekt.chess.board.Board;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class Start {
     private static Timer swingTimer;
     private static JLabel timerLabelWhite;
     private static JLabel timerLabelBlack;
     public static boolean isWhiteTurn = true;
-    private static JTextArea chatArea;
     private static ChessTimer timerWhite;
     private static ChessTimer timerBlack;
 
@@ -27,12 +24,9 @@ public class Start {
 
         JButton startButton = new JButton("Start Game");
         startButton.setPreferredSize(new Dimension(120, 40));
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                startGame();
-                startFrame.setVisible(false);
-            }
+        startButton.addActionListener(e -> {
+            startGame();
+            startFrame.setVisible(false);
         });
         startPanel.add(startButton);
 
@@ -79,7 +73,7 @@ public class Start {
 
         timerAndChatPanel.add(timersPanel, BorderLayout.NORTH);
 
-        chatArea = new JTextArea();
+        JTextArea chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
         chatScrollPane.setPreferredSize(new Dimension(400, 150));
@@ -96,23 +90,20 @@ public class Start {
         timerWhite = new ChessTimer(15, 0);
         timerBlack = new ChessTimer(15, 0);
 
-        swingTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (isWhiteTurn) {
-                    timerWhite.decrementTime();
-                    timerLabelWhite.setText(String.format("%02d:%02d", timerWhite.getMinutes(), timerWhite.getSeconds()));
-                    if (timerWhite.getMinutes() == 0 && timerWhite.getSeconds() == 0) {
-                        JOptionPane.showMessageDialog(frame, "Czas białego gracza minął. Czarny wygrywa!");
-                        swingTimer.stop();
-                    }
-                } else {
-                    timerBlack.decrementTime();
-                    timerLabelBlack.setText(String.format("%02d:%02d", timerBlack.getMinutes(), timerBlack.getSeconds()));
-                    if (timerBlack.getMinutes() == 0 && timerBlack.getSeconds() == 0) {
-                        JOptionPane.showMessageDialog(frame, "Czas czarnego gracza minął. Biały wygrywa!");
-                        swingTimer.stop();
-                    }
+        swingTimer = new Timer(1000, e -> {
+            if (isWhiteTurn) {
+                timerWhite.decrementTime();
+                timerLabelWhite.setText(String.format("%02d:%02d", timerWhite.getMinutes(), timerWhite.getSeconds()));
+                if (timerWhite.getMinutes() == 0 && timerWhite.getSeconds() == 0) {
+                    JOptionPane.showMessageDialog(frame, "Czas białego gracza minął. Czarny wygrywa!");
+                    swingTimer.stop();
+                }
+            } else {
+                timerBlack.decrementTime();
+                timerLabelBlack.setText(String.format("%02d:%02d", timerBlack.getMinutes(), timerBlack.getSeconds()));
+                if (timerBlack.getMinutes() == 0 && timerBlack.getSeconds() == 0) {
+                    JOptionPane.showMessageDialog(frame, "Czas czarnego gracza minął. Biały wygrywa!");
+                    swingTimer.stop();
                 }
             }
         });

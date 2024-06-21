@@ -3,8 +3,10 @@ package projekt.chess.pieces;
 import java.util.ArrayList;
 import java.util.List;
 
+import static projekt.chess.board.Board.WHITE;
+
 public class Pawn extends Piece {
-    private String color;
+    private final String color;
 
     public Pawn(String color) {
         super(color);
@@ -15,9 +17,9 @@ public class Pawn extends Piece {
     public List<int[]> calculateValidMoves(Piece[][] board, int currentRow, int currentCol) {
         validMoves = new ArrayList<>();
 
-        int direction = color.equals("white") ? -1 : 1;
-        int startRow = color.equals("white") ? 6 : 1;
-
+        int direction = color.equals(WHITE) ? -1 : 1;
+        int startRow = color.equals(WHITE) ? 6 : 1;
+        
         int newRow = currentRow + direction;
         int newCol = currentCol;
         if (newRow >= 0 && newRow < 8 && board[newRow][newCol] == null) {
@@ -28,24 +30,27 @@ public class Pawn extends Piece {
                 && board[currentRow + 2 * direction][currentCol] == null) {
             validMoves.add(new int[]{currentRow + 2 * direction, currentCol});
         }
+        
         newRow = currentRow + direction;
         newCol = currentCol - 1;
-        if (newRow >= 0 && newRow < 8 && newCol >= 0 && board[newRow][newCol] != null) {
+        if (newRow >= 0 && newRow < 8 && newCol >= 0 && board[newRow][newCol] != null
+                && !board[newRow][newCol].getColor().equals(this.getColor())) {
             validMoves.add(new int[]{newRow, newCol});
         }
-
+        
         newRow = currentRow + direction;
         newCol = currentCol + 1;
-        if (newRow >= 0 && newRow < 8 && newCol < 8 && board[newRow][newCol] != null) {
+        if (newRow >= 0 && newRow < 8 && newCol < 8 && board[newRow][newCol] != null
+                && !board[newRow][newCol].getColor().equals(this.getColor())) {
             validMoves.add(new int[]{newRow, newCol});
         }
 
         return validMoves;
     }
-    public List<int[]> calculateTake(Piece[][] board, int currentRow, int currentCol) {
+
+    public List<int[]> calculateTake(int currentRow, int currentCol) {
         take = new ArrayList<>();
-        int direction = color.equals("white") ? -1 : 1;
-        int startRow = color.equals("white") ? 6 : 1;
+        int direction = color.equals(WHITE) ? -1 : 1;
 
         int newRow;
         int newCol;
@@ -64,8 +69,9 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public List<int[]> calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
+    public void calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
         List<int[]> validMoves = calculateValidMoves(board, currentRow, currentCol);
+        threatenedMoves = new ArrayList<>();
 
         for (int[] move : validMoves) {
             if (isThreatened(board, move[0], move[1], this.color)) {
@@ -73,30 +79,6 @@ public class Pawn extends Piece {
             }
         }
 
-        return threatenedMoves;
-    }
-    private boolean isThreatened(Piece[][] board, int row, int col, String color) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if (piece != null && !piece.getColor().equals(color)) {
-                    List<int[]> opponentMoves;
-                    if (piece instanceof Pawn) {
-                        opponentMoves = ((Pawn) piece).calculateTake(board, i, j);
-                    } else {
-                        opponentMoves = piece.calculateValidMoves(board, i, j);
-                    }
-                    if (opponentMoves != null) {
-                        for (int[] move : opponentMoves) {
-                            if (move[0] == row && move[1] == col) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     @Override

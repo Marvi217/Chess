@@ -1,9 +1,15 @@
 package projekt.chess.exception;
 public class TurnException extends Exception {
-    private String message;
+    private final String message;
 
     public TurnException() {
-        this.message ="\n !!!!!! BŁĄD \n" +"Tura przeciwnika "+ "\n !!!!!! BŁĄD \n \n";
+        this.message = """
+
+                 !!!!!! BŁĄD\s
+                Tura przeciwnika\s
+                 !!!!!! BŁĄD\s
+                \s
+                """;
     }
 
     @Override

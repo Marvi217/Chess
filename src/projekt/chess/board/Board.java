@@ -1,5 +1,4 @@
 package projekt.chess.board;
-
 import projekt.chess.exception.InvalidMoveException;
 import projekt.chess.exception.TurnException;
 import projekt.chess.pieces.*;
@@ -8,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
@@ -18,10 +16,12 @@ import java.util.List;
 import static projekt.chess.engine.Start.isWhiteTurn;
 
 public class Board extends JComponent {
-    private Piece[][] board = new Piece[8][8];
+    public static final String BLACK = "black";
+    public static final String WHITE = "white";
+    private final Piece[][] board = new Piece[8][8];
     private int selectedRow = -1;
     private int selectedCol = -1;
-    private static JTextArea chatArea;
+    static JTextArea chatArea;
 
     public Board() {
         initialize();
@@ -29,44 +29,48 @@ public class Board extends JComponent {
     }
 
     public void setChatArea(JTextArea chatArea) {
-        this.chatArea = chatArea;
+        Board.chatArea = chatArea;
     }
 
-    public void initialize() {
+    private void initialize() {
+        setupPiecePosition();
+        setTheChessPieces();
+    }
+    private void setupPiecePosition() {
         for (int x = 0; x < board.length; x++) {
             for (int y = 0; y < board[0].length; y++) {
                 board[x][y] = null;
             }
         }
-
         for (int x = 0; x < 8; x++) {
-            board[1][x] = new Pawn("black");
+            board[1][x] = new Pawn(BLACK);
         }
         for (int x = 0; x < 8; x++) {
-            board[6][x] = new Pawn("white");
+            board[6][x] = new Pawn(WHITE);
         }
 
-        board[0][0] = new Rook("black");
-        board[0][7] = new Rook("black");
-        board[7][7] = new Rook("white");
-        board[7][0] = new Rook("white");
+        board[0][0] = new Rook(BLACK);
+        board[0][7] = new Rook(BLACK);
+        board[7][7] = new Rook(WHITE);
+        board[7][0] = new Rook(WHITE);
 
-        board[0][1] = new Knight("black");
-        board[0][6] = new Knight("black");
-        board[7][6] = new Knight("white");
-        board[7][1] = new Knight("white");
+        board[0][1] = new Knight(BLACK);
+        board[0][6] = new Knight(BLACK);
+        board[7][6] = new Knight(WHITE);
+        board[7][1] = new Knight(WHITE);
 
-        board[0][2] = new Bishop("black");
-        board[0][5] = new Bishop("black");
-        board[7][2] = new Bishop("white");
-        board[7][5] = new Bishop("white");
+        board[0][2] = new Bishop(BLACK);
+        board[0][5] = new Bishop(BLACK);
+        board[7][2] = new Bishop(WHITE);
+        board[7][5] = new Bishop(WHITE);
 
-        board[0][3] = new Queen("black");
-        board[7][3] = new Queen("white");
+        board[0][3] = new Queen(BLACK);
+        board[7][3] = new Queen(WHITE);
 
-        board[0][4] = new King("black");
-        board[7][4] = new King("white");
-
+        board[0][4] = new King(BLACK);
+        board[7][4] = new King(WHITE);
+    }
+    public void setTheChessPieces () {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Piece piece = board[row][col];
@@ -81,20 +85,13 @@ public class Board extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         int tileSize = getSize().width / 8;
+        drawTiles(g, tileSize);
+        drawValidMoves(g, tileSize);
+        drawSelectedTiles(g, tileSize);
+        drawPieces(g, tileSize);
 
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                boolean isWhite = (row + col) % 2 == 0;
-                Color tileColor = isWhite ? Color.LIGHT_GRAY : Color.DARK_GRAY;
-                g.setColor(tileColor);
-                g.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-            }
-        }
-        if (selectedRow != -1 && selectedCol != -1) {
-            Color transparentBlue = new Color(0, 0, 255, 128);
-            g.setColor(transparentBlue);
-            g.fillRect(selectedCol * tileSize, selectedRow * tileSize, tileSize - 1, tileSize - 1);
-        }
+    }
+    public void drawValidMoves(Graphics g, int tileSize) {
         if (selectedRow != -1 && selectedCol != -1) {
             Piece selectedPiece = board[selectedRow][selectedCol];
             if (selectedPiece != null) {
@@ -109,16 +106,24 @@ public class Board extends JComponent {
 
                     Color color;
                     if (containsMove(isThreatened, move)) {
-                        color = new Color(255, 124, 17, 148); // Orange color for threatened squares
+                        color = new Color(255, 124, 17, 120);
                     } else {
-                        color = new Color(0, 255, 0, 128); // Green color for valid moves
+                        color = new Color(0, 255, 0, 120);
                     }
-
                     g.setColor(color);
                     g.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
                 }
             }
         }
+    }
+    public void drawSelectedTiles(Graphics g, int tileSize) {
+        if (selectedRow != -1 && selectedCol != -1) {
+            Color transparentBlue = new Color(0, 0, 255, 128);
+            g.setColor(transparentBlue);
+            g.fillRect(selectedCol * tileSize, selectedRow * tileSize, tileSize - 1, tileSize - 1);
+        }
+    }
+    public void drawPieces(Graphics g, int tileSize) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 if (board[row][col] != null) {
@@ -130,6 +135,17 @@ public class Board extends JComponent {
             }
         }
     }
+    public void drawTiles(Graphics g, int tileSize){
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                boolean isWhite = (row + col) % 2 == 0;
+                Color tileColor = isWhite ? Color.LIGHT_GRAY : Color.DARK_GRAY;
+                g.setColor(tileColor);
+                g.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+            }
+        }
+    }
+
     private boolean containsMove(List<int[]> moves, int[] move) {
         for (int[] m : moves) {
             if (m[0] == move[0] && m[1] == move[1]) {
@@ -138,9 +154,11 @@ public class Board extends JComponent {
         }
         return false;
     }
+
     private static boolean isValidPosition(int row, int col) {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
+
     public void setupMouseListener() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -156,7 +174,7 @@ public class Board extends JComponent {
                             selectedRow = row;
                             selectedCol = col;
                             repaint();
-                        }catch (TurnException e) {
+                        } catch (TurnException e) {
                             chatArea.append(e.getMessage());
                         }
                     } else {
@@ -180,14 +198,14 @@ public class Board extends JComponent {
         });
     }
 
-    public void checkTurn(int row, int col) throws TurnException {
+    private void checkTurn(int row, int col) throws TurnException {
         if (board[row][col] != null &&
-                ((!isWhiteTurn && "white".equals(board[row][col].getColor())) || (isWhiteTurn && "black".equals(board[row][col].getColor())))) {
+                ((!isWhiteTurn && WHITE.equals(board[row][col].getColor())) || (isWhiteTurn && BLACK.equals(board[row][col].getColor())))) {
             throw new TurnException();
         }
     }
 
-    public void isValid(List<int[]> validMoves,int row, int col, String piece) throws InvalidMoveException {
+    private void isValid(List<int[]> validMoves, int row, int col, String piece) throws InvalidMoveException {
         for (int[] move : validMoves) {
             if (move[0] == row && move[1] == col) {
                 movePiece(selectedRow, selectedCol, row, col);
@@ -205,13 +223,12 @@ public class Board extends JComponent {
         }
         throw new InvalidMoveException(String.valueOf(piece));
     }
+
     private void movePiece(int startRow, int startCol, int targetRow, int targetCol) {
         Piece movingPiece = board[startRow][startCol];
 
         if (board[targetRow][targetCol] != null) {
-            chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
-                    " bije " + board[targetRow][targetCol].getColor() + " " +
-                    board[targetRow][targetCol].getClass().getSimpleName() + "\n");
+            capturePiece(movingPiece, targetRow, targetCol);
         }
 
         board[targetRow][targetCol] = movingPiece;
@@ -220,83 +237,82 @@ public class Board extends JComponent {
         movingPiece.setPosition(targetRow, targetCol);
 
         if (movingPiece instanceof Pawn && (targetRow == 0 || targetRow == 7)) {
-            Object[] options = {"Hetman", "Wieża", "Goniec", "Skoczek"};
-            int choice = JOptionPane.showOptionDialog(this,
-                    "Wybierz figurę:",
-                    "Awans",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]);
-
-            Piece promotedPiece;
-            switch (choice) {
-                case 0:
-                    promotedPiece = new Queen(movingPiece.getColor());
-                    break;
-                case 1:
-                    promotedPiece = new Rook(movingPiece.getColor());
-                    break;
-                case 2:
-                    promotedPiece = new Bishop(movingPiece.getColor());
-                    break;
-                case 3:
-                    promotedPiece = new Knight(movingPiece.getColor());
-                    break;
-                default:
-                    promotedPiece = new Queen(movingPiece.getColor());
-                    break;
-            }
-            board[targetRow][targetCol] = promotedPiece;
+            promotePawn(targetRow, targetCol, movingPiece.getColor());
         } else if (movingPiece instanceof King && Math.abs(targetCol - startCol) == 2) {
-            if (targetCol - startCol > 0) {
-                board[targetRow][5] = board[targetRow][7];
-                board[targetRow][7] = null;
-            } else {
-                board[targetRow][3] = board[targetRow][0];
-                board[targetRow][0] = null;
-            }
+            castleKing(startCol, targetRow, targetCol);
         }
-
-        chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
-                " przenosi się z (" + startRow + "," + startCol + ") na (" + targetRow + "," + targetCol + ")\n");
+        logMove(movingPiece, startRow, startCol, targetRow, targetCol);
 
         repaint();
     }
+
+    private void capturePiece(Piece movingPiece, int targetRow, int targetCol) {
+        chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
+                " bije " + board[targetRow][targetCol].getColor() + " " +
+                board[targetRow][targetCol].getClass().getSimpleName() + "\n");
+    }
+
+    private void promotePawn(int targetRow, int targetCol, String color) {
+        Object[] options = {"Hetman", "Wieża", "Goniec", "Skoczek"};
+        int choice = JOptionPane.showOptionDialog(this,
+                "Wybierz figurę:",
+                "Awans",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        Piece promotedPiece = switch (choice) {
+            case 1 -> new Rook(color);
+            case 2 -> new Bishop(color);
+            case 3 -> new Knight(color);
+            default -> new Queen(color);
+        };
+        board[targetRow][targetCol] = promotedPiece;
+    }
+    private void logMove(Piece movingPiece, int startRow, int startCol, int targetRow, int targetCol) {
+        chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
+                " przenosi się z (" + startRow + "," + startCol + ") na (" + targetRow + "," + targetCol + ")\n");
+    }
+    private void castleKing(int startCol, int targetRow, int targetCol) {
+        if (targetCol - startCol > 0) {
+            board[targetRow][5] = board[targetRow][7];
+            board[targetRow][7] = null;
+        } else {
+            board[targetRow][3] = board[targetRow][0];
+            board[targetRow][0] = null;
+        }
+    }
+
     private Piece findKing(boolean isWhiteTurn) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Piece piece = board[row][col];
-                if (piece instanceof King && piece.getColor().equals(isWhiteTurn ? "white" : "black")) {
+                if (piece instanceof King && piece.getColor().equals(isWhiteTurn ? WHITE : BLACK)) {
                     return piece;
                 }
             }
         }
         return null;
     }
+
     private boolean isCheckmate(King king) {
         if (king == null) {
             return true;
         }
-
         if (isInCheck(king)) {
             String color = king.getColor();
-            chatArea.append(color + " king is in check!\n");
-
+            chatArea.append(color + " król jest zagrożony!\n");
             if (canKingEscape(king)) {
                 return false;
             }
-
-            if (canBlockOrCaptureThreat(king)) {
-                return false;
-            }
-
-            return true;
+            return !canBlockOrCaptureThreat(king);
         }
 
         return false;
     }
+
     private boolean isInCheck(King king) {
         int kingRow = king.getRow();
         int kingCol = king.getCol();
@@ -353,9 +369,6 @@ public class Board extends JComponent {
     }
 
     private boolean canBlockOrCaptureThreat(King king) {
-        int kingRow = king.getRow();
-        int kingCol = king.getCol();
-
         List<int[]> threateningMoves = king.getThreatenedMoves();
         for (int[] threatMove : threateningMoves) {
             int threatRow = threatMove[0];
@@ -388,20 +401,16 @@ public class Board extends JComponent {
     }
 
     private void handleCheckmate() {
-        String winner = isWhiteTurn ? "Black" : "White";
+        String winner = isWhiteTurn ? "Black" : WHITE;
         JOptionPane.showMessageDialog(this, winner + " wins!");
-        saveChatToFile("Save");
+        saveChatToFile();
 
     }
 
-    private void saveChatToFile(String fileName) {
-        File savesFolder = new File("saves");
-        if (!savesFolder.exists()) {
-            savesFolder.mkdir();
-        }
+    private void saveChatToFile() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String timeStamp = dateFormat.format(new Date());
-        String uniqueFileName = "saves/" + fileName + "_" + timeStamp + ".txt";
+        String uniqueFileName = "saves/" + "Save" + "_" + timeStamp + ".txt";
 
         try (FileWriter writer = new FileWriter(uniqueFileName)) {
             writer.write(chatArea.getText());

@@ -3,8 +3,10 @@ package projekt.chess.pieces;
 import java.util.ArrayList;
 import java.util.List;
 
+import static projekt.chess.pieces.Queen.isPathClear;
+
 public class Bishop extends Piece {
-    private String color;
+    private final String color;
 
     public Bishop(String color) {
         super(color);
@@ -35,16 +37,15 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public List<int[]> calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
+    public void calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
         List<int[]> validMoves = calculateValidMoves(board, currentRow, currentCol);
-
+        threatenedMoves = new ArrayList<>();
         for (int[] move : validMoves) {
             if (isThreatened(board, move[0], move[1], this.color)) {
                 threatenedMoves.add(move);
             }
         }
 
-        return threatenedMoves;
     }
 
     private boolean isValidMove(Piece[][] board, int currentRow, int currentCol, int newRow, int newCol) {
@@ -59,13 +60,7 @@ public class Bishop extends Piece {
             int rowStep = Integer.compare(newRow, currentRow);
             int colStep = Integer.compare(newCol, currentCol);
 
-            for (int i = 1; i < rowDiff; i++) {
-                if (board[currentRow + i * rowStep][currentCol + i * colStep] != null) {
-                    return false;
-                }
-            }
-
-            return board[newRow][newCol] == null || !board[newRow][newCol].getColor().equals(this.color);
+            return isPathClear(board, currentRow, currentCol, newRow, newCol, rowStep, colStep, rowDiff, this.color);
         }
 
         return false;
@@ -94,29 +89,5 @@ public class Bishop extends Piece {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private boolean isThreatened(Piece[][] board, int row, int col, String color) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if (piece != null && !piece.getColor().equals(color)) {
-                    List<int[]> opponentMoves;
-                    if (piece instanceof Pawn) {
-                        opponentMoves = ((Pawn) piece).calculateTake(board, i, j);
-                    } else {
-                        opponentMoves = piece.calculateValidMoves(board, i, j);
-                    }
-                    if (opponentMoves != null) {
-                        for (int[] move : opponentMoves) {
-                            if (move[0] == row && move[1] == col) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 }

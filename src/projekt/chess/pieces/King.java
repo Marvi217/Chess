@@ -4,20 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class King extends Piece {
-    private boolean hasMoved;
+    private final boolean hasMoved;
 
     public King(String color) {
         super(color);
         this.hasMoved = false;
-        boolean castled = false;
     }
 
     @Override
     public List<int[]> calculateValidMoves(Piece[][] board, int currentRow, int currentCol) {
         validMoves = new ArrayList<>();
-        threatenedPositions = new ArrayList<>();
 
-        // Possible movements for the king
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1},
                 {1, 1}, {-1, -1}, {1, -1}, {-1, 1}
@@ -29,40 +26,39 @@ public class King extends Piece {
 
             if (isValidMove(board, currentRow, currentCol, newRow, newCol)) {
                 validMoves.add(new int[]{newRow, newCol});
-                if (board[newRow][newCol] != null && !board[newRow][newCol].getColor().equals(this.getColor())) {
-                    threatenedPositions.add(new int[]{newRow, newCol});
-                }
             }
         }
 
-        // Adding castling logic
         if (!hasMoved) {
-            // Short castling
-            if (board[currentRow][currentCol + 1] == null && board[currentRow][currentCol + 2] == null &&
-                    board[currentRow][currentCol + 3] instanceof Rook && !((Rook) board[currentRow][currentCol + 3]).hasMoved) {
+            if (isCastlingPossible(board, currentRow, currentCol + 3)) {
                 validMoves.add(new int[]{currentRow, currentCol + 2});
             }
-            // Long castling
-            if (board[currentRow][currentCol - 1] == null && board[currentRow][currentCol - 2] == null &&
-                    board[currentRow][currentCol - 3] == null && board[currentRow][currentCol - 4] instanceof Rook &&
-                    !((Rook) board[currentRow][currentCol - 4]).hasMoved) {
+            if (isCastlingPossible(board, currentRow, currentCol - 4)) {
                 validMoves.add(new int[]{currentRow, currentCol - 2});
             }
         }
         return validMoves;
     }
 
-    @Override
-    public List<int[]> calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
-        List<int[]> validMoves = calculateValidMoves(board, currentRow, currentCol);
+    private boolean isCastlingPossible(Piece[][] board, int row, int rookCol) {
+        if (rookCol < 0 || rookCol >= 8) return false;
 
+        int colStep = (rookCol > 4) ? 1 : -1;
+        for (int col = 4 + colStep; col != rookCol; col += colStep) {
+            if (board[row][col] != null) return false;
+        }
+        return board[row][rookCol] instanceof Rook && !((Rook) board[row][rookCol]).hasMoved;
+    }
+
+    @Override
+    public void calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
+        List<int[]> validMoves = calculateValidMoves(board, currentRow, currentCol);
+        threatenedMoves = new ArrayList<>();
         for (int[] move : validMoves) {
             if (isThreatened(board, move[0], move[1], this.getColor())) {
                 threatenedMoves.add(move);
             }
         }
-
-        return threatenedMoves;
     }
 
     private boolean isValidMove(Piece[][] board, int currentRow, int currentCol, int newRow, int newCol) {
@@ -75,29 +71,6 @@ public class King extends Piece {
 
         return (rowDiff <= 1 && colDiff <= 1) &&
                 (board[newRow][newCol] == null || !board[newRow][newCol].getColor().equals(this.getColor()));
-    }
-    private boolean isThreatened(Piece[][] board, int row, int col, String color) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if (piece != null && !piece.getColor().equals(color)) {
-                    List<int[]> opponentMoves;
-                    if (piece instanceof Pawn) {
-                        opponentMoves = ((Pawn) piece).calculateTake(board, i, j);
-                    } else {
-                        opponentMoves = piece.calculateValidMoves(board, i, j);
-                    }
-                    if (opponentMoves != null) {
-                        for (int[] move : opponentMoves) {
-                            if (move[0] == row && move[1] == col) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     @Override
