@@ -1,11 +1,12 @@
 package projekt.chess.pieces;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static projekt.chess.pieces.Queen.isPathClear;
 
-public class Bishop extends Piece {
+public class Bishop extends Piece implements Serializable {
     private final String color;
 
     public Bishop(String color) {

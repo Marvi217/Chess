@@ -1,9 +1,10 @@
 package projekt.chess.pieces;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class King extends Piece {
+public class King extends Piece implements Serializable {
     private final boolean hasMoved;
 
     public King(String color) {

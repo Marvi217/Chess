@@ -1,0 +1,26 @@
+white Pawn przenosi się z (6,4) na (4,4)
+black Pawn przenosi się z (1,5) na (3,5)
+white Pawn przenosi się z (6,3) na (4,3)
+black Pawn przenosi się z (1,4) na (3,4)
+white Pawn bije black Pawn
+white Pawn przenosi się z (4,3) na (3,4)
+black Pawn bije white Pawn
+black Pawn przenosi się z (3,5) na (4,4)
+
+ !!!!!! BŁĄD 
+Tura przeciwnika 
+ !!!!!! BŁĄD 
+ 
+
+white Pawn przenosi się z (3,4) na (2,4)
+black Pawn przenosi się z (4,4) na (5,4)
+white Pawn przenosi się z (2,4) na (1,4)
+black Pawn przenosi się z (5,4) na (6,4)
+white Pawn bije black Bishop
+white Pawn przenosi się z (1,4) na (0,5)
+black król jest zagrożony!
+black Pawn bije white Bishop
+black Pawn przenosi się z (6,4) na (7,5)
+white król jest zagrożony!
+white Queen bije black King
+white Queen przenosi się z (0,5) na (0,4)

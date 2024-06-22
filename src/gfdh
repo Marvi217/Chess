@@ -1,0 +1,4 @@
+private JFrame chessFrame;
+    private JTextArea chatArea;
+    private Board chessBoard;
+    private JFrame startFrame;

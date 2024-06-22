@@ -1,8 +1,9 @@
 package projekt.chess.pieces;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Queen extends Piece {
+public class Queen extends Piece implements Serializable {
 
     public Queen(String color) {
         super(color);

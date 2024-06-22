@@ -7,41 +7,49 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.FileWriter;
+import java.io.*;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import static projekt.chess.engine.Start.isWhiteTurn;
 
-public class Board extends JComponent {
-    public static final String BLACK = "black";
-    public static final String WHITE = "white";
+public class Board extends JComponent implements Serializable {
+    private boolean isWhiteTurn = true;
+    public  final String BLACK = "black";
+    public  final String WHITE = "white";
     private final Piece[][] board = new Piece[8][8];
     private int selectedRow = -1;
     private int selectedCol = -1;
-    static JTextArea chatArea;
+    private JTextArea chatArea;
 
     public Board() {
         initialize();
         setupMouseListener();
     }
+    public static void continueGame() {
+      //  setupMouseListener();
+    }
 
     public void setChatArea(JTextArea chatArea) {
-        Board.chatArea = chatArea;
+        this.chatArea = chatArea;
     }
 
     private void initialize() {
+        clearBoard();
         setupPiecePosition();
         setTheChessPieces();
     }
-    private void setupPiecePosition() {
+
+    private void clearBoard() {
         for (int x = 0; x < board.length; x++) {
             for (int y = 0; y < board[0].length; y++) {
                 board[x][y] = null;
             }
         }
+    }
+
+    private void setupPiecePosition() {
         for (int x = 0; x < 8; x++) {
             board[1][x] = new Pawn(BLACK);
         }
@@ -70,7 +78,8 @@ public class Board extends JComponent {
         board[0][4] = new King(BLACK);
         board[7][4] = new King(WHITE);
     }
-    public void setTheChessPieces () {
+
+    public void setTheChessPieces() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Piece piece = board[row][col];
@@ -89,8 +98,8 @@ public class Board extends JComponent {
         drawValidMoves(g, tileSize);
         drawSelectedTiles(g, tileSize);
         drawPieces(g, tileSize);
-
     }
+
     public void drawValidMoves(Graphics g, int tileSize) {
         if (selectedRow != -1 && selectedCol != -1) {
             Piece selectedPiece = board[selectedRow][selectedCol];
@@ -116,26 +125,33 @@ public class Board extends JComponent {
             }
         }
     }
+
     public void drawSelectedTiles(Graphics g, int tileSize) {
-        if (selectedRow != -1 && selectedCol != -1) {
+        if (selectedRow != -1 && selectedCol != -1 && board[selectedRow][selectedCol] != null) {
             Color transparentBlue = new Color(0, 0, 255, 128);
             g.setColor(transparentBlue);
             g.fillRect(selectedCol * tileSize, selectedRow * tileSize, tileSize - 1, tileSize - 1);
         }
     }
+
     public void drawPieces(Graphics g, int tileSize) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 if (board[row][col] != null) {
                     Piece piece = board[row][col];
                     String imagePath = piece.getImagePath();
-                    Image pieceImage = new ImageIcon(imagePath).getImage();
-                    g.drawImage(pieceImage, col * tileSize, row * tileSize, tileSize, tileSize, this);
+                    try {
+                        Image pieceImage = new ImageIcon(imagePath).getImage();
+                        g.drawImage(pieceImage, col * tileSize, row * tileSize, tileSize, tileSize, this);
+                    } catch (Exception e) {
+                        System.out.println("Could not load image: " + imagePath);
+                    }
                 }
             }
         }
     }
-    public void drawTiles(Graphics g, int tileSize){
+
+    public void drawTiles(Graphics g, int tileSize) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 boolean isWhite = (row + col) % 2 == 0;
@@ -169,13 +185,15 @@ public class Board extends JComponent {
 
                 if (Board.isValidPosition(row, col)) {
                     if (selectedRow == -1 && selectedCol == -1) {
-                        try {
-                            checkTurn(row, col);
-                            selectedRow = row;
-                            selectedCol = col;
-                            repaint();
-                        } catch (TurnException e) {
-                            chatArea.append(e.getMessage());
+                        if (board[row][col] != null) {  // Ensure the selected cell is not empty
+                            try {
+                                checkTurn(row, col);
+                                selectedRow = row;
+                                selectedCol = col;
+                                repaint();
+                            } catch (TurnException e) {
+                                chatArea.append(e.getMessage() + "\n");
+                            }
                         }
                     } else {
                         if (board[selectedRow][selectedCol] != null) {
@@ -186,7 +204,7 @@ public class Board extends JComponent {
                             try {
                                 isValid(validMoves, row, col, piece);
                             } catch (InvalidMoveException e) {
-                                chatArea.append(e.getMessage());
+                                chatArea.append(e.getMessage() + "\n");
                                 selectedRow = -1;
                                 selectedCol = -1;
                             }
@@ -224,7 +242,7 @@ public class Board extends JComponent {
         throw new InvalidMoveException(String.valueOf(piece));
     }
 
-    private void movePiece(int startRow, int startCol, int targetRow, int targetCol) {
+    public void movePiece(int startRow, int startCol, int targetRow, int targetCol) {
         Piece movingPiece = board[startRow][startCol];
 
         if (board[targetRow][targetCol] != null) {
@@ -246,35 +264,15 @@ public class Board extends JComponent {
         repaint();
     }
 
-    private void capturePiece(Piece movingPiece, int targetRow, int targetCol) {
-        chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
-                " bije " + board[targetRow][targetCol].getColor() + " " +
-                board[targetRow][targetCol].getClass().getSimpleName() + "\n");
-    }
-
-    private void promotePawn(int targetRow, int targetCol, String color) {
-        Object[] options = {"Hetman", "Wieża", "Goniec", "Skoczek"};
-        int choice = JOptionPane.showOptionDialog(this,
-                "Wybierz figurę:",
-                "Awans",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]);
-
-        Piece promotedPiece = switch (choice) {
-            case 1 -> new Rook(color);
-            case 2 -> new Bishop(color);
-            case 3 -> new Knight(color);
-            default -> new Queen(color);
-        };
-        board[targetRow][targetCol] = promotedPiece;
-    }
     private void logMove(Piece movingPiece, int startRow, int startCol, int targetRow, int targetCol) {
         chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
                 " przenosi się z (" + startRow + "," + startCol + ") na (" + targetRow + "," + targetCol + ")\n");
     }
+
+    public void promotePawn(int row, int col, String color) {
+        board[row][col] = new Queen(color);
+    }
+
     private void castleKing(int startCol, int targetRow, int targetCol) {
         if (targetCol - startCol > 0) {
             board[targetRow][5] = board[targetRow][7];
@@ -285,11 +283,17 @@ public class Board extends JComponent {
         }
     }
 
-    private Piece findKing(boolean isWhiteTurn) {
+    private void capturePiece(Piece movingPiece, int targetRow, int targetCol) {
+        chatArea.append(movingPiece.getColor() + " " + movingPiece.getClass().getSimpleName() +
+                " bije " + board[targetRow][targetCol].getColor() + " " +
+                board[targetRow][targetCol].getClass().getSimpleName() + "\n");
+    }
+
+    public Piece findKing(boolean isWhite) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Piece piece = board[row][col];
-                if (piece instanceof King && piece.getColor().equals(isWhiteTurn ? WHITE : BLACK)) {
+                if (piece instanceof King && isWhite == WHITE.equals(piece.getColor())) {
                     return piece;
                 }
             }
@@ -321,14 +325,19 @@ public class Board extends JComponent {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
                 if (piece != null && !piece.getColor().equals(king.getColor())) {
-                    List<int[]> validMoves = piece.calculateValidMoves(board, i, j);
-                    if (validMoves != null) {
-                        for (int[] move : validMoves) {
-                            if (move[0] == kingRow && move[1] == kingCol) {
-                                return true;
-                            }
-                        }
-                    }
+                    if (canAttackEnemyKing(kingRow, kingCol, i, j, piece)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean canAttackEnemyKing(int kingRow, int kingCol, int i, int j, Piece piece) {
+        List<int[]> validMoves = piece.calculateValidMoves(board, i, j);
+        if (validMoves != null) {
+            for (int[] move : validMoves) {
+                if (move[0] == kingRow && move[1] == kingCol) {
+                    return true;
                 }
             }
         }
@@ -354,14 +363,7 @@ public class Board extends JComponent {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
                 if (piece != null && !piece.getColor().equals(color)) {
-                    List<int[]> validMoves = piece.calculateValidMoves(board, i, j);
-                    if (validMoves != null) {
-                        for (int[] move : validMoves) {
-                            if (move[0] == row && move[1] == col) {
-                                return true;
-                            }
-                        }
-                    }
+                    if (canAttackEnemyKing(row, col, i, j, piece)) return true;
                 }
             }
         }
@@ -404,18 +406,107 @@ public class Board extends JComponent {
         String winner = isWhiteTurn ? "Black" : WHITE;
         JOptionPane.showMessageDialog(this, winner + " wins!");
         saveChatToFile();
+    }
 
+    private String getDate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        return dateFormat.format(new Date());
     }
 
     private void saveChatToFile() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        String timeStamp = dateFormat.format(new Date());
-        String uniqueFileName = "saves/" + "Save" + "_" + timeStamp + ".txt";
+        String uniqueFileName = "saves/Chat/" + "Save" + "_"+ getDate() + ".txt";
 
         try (FileWriter writer = new FileWriter(uniqueFileName)) {
             writer.write(chatArea.getText());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Nie udało się");
         }
+    }
+    private void saveChatToGameFile(File gameFile) {
+        String chatFileName = "saves/Chat/Game/Chat_" + gameFile.getName().substring(4, 20) + ".txt";
+        try (FileWriter writer = new FileWriter(chatFileName)) {
+            writer.write(chatArea.getText());
+        } catch (IOException e) {
+            System.out.println("Failed to save chat: " + e.getMessage());
+        }
+    }
+    public void saveGame() {
+        String uniqueFileName = "saves/Game/Game_" + getDate() + ".ser";
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(uniqueFileName))) {
+            oos.writeObject(this);
+            saveChatToGameFile(new File(uniqueFileName)); // Save chat along with the game
+            JOptionPane.showMessageDialog(this, "Game saved successfully!");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static Board loadGame(File file, JTextArea chatArea) {
+        Board loadedBoard = null;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            loadedBoard = (Board) ois.readObject();
+
+            File chatFile = new File("saves/Chat/Game/Chat_" + file.getName().substring(4, 20) + ".txt");
+            String chatContent = new String(Files.readAllBytes(chatFile.toPath()));
+            chatArea.setText(chatContent);
+
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(null, "Error loading game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return loadedBoard;
+    }
+
+
+    private void loadChatFromFile(File file) {
+        if (chatArea == null) {
+            System.out.println("JTextArea chatArea is not initialized!");
+            return;
+        }
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            System.out.println("Failed to load chat: " + e.getMessage());
+        }
+        chatArea.setText(content.toString());
+    }
+
+    public static void loadSave(JFrame frame) {
+        JFileChooser fileChooser = new JFileChooser("saves/Chat");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        int option = fileChooser.showOpenDialog(frame);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try {
+                String fileContents = readFile(selectedFile);
+                displayFileContents(frame, fileContents);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(frame, "Error loading file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private static String readFile(File file) throws IOException {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        }
+        return content.toString();
+    }
+
+    private static void displayFileContents(JFrame frame, String fileContents) {
+        JTextArea textArea = new JTextArea(fileContents);
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+
+        JOptionPane.showMessageDialog(frame, scrollPane, "File Contents", JOptionPane.PLAIN_MESSAGE);
     }
 }

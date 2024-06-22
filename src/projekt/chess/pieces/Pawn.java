@@ -1,11 +1,10 @@
 package projekt.chess.pieces;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static projekt.chess.board.Board.WHITE;
-
-public class Pawn extends Piece {
+public class Pawn extends Piece implements Serializable {
     private final String color;
 
     public Pawn(String color) {
@@ -17,8 +16,8 @@ public class Pawn extends Piece {
     public List<int[]> calculateValidMoves(Piece[][] board, int currentRow, int currentCol) {
         validMoves = new ArrayList<>();
 
-        int direction = color.equals(WHITE) ? -1 : 1;
-        int startRow = color.equals(WHITE) ? 6 : 1;
+        int direction = color.equals("white") ? -1 : 1;
+        int startRow = color.equals("white") ? 6 : 1;
         
         int newRow = currentRow + direction;
         int newCol = currentCol;
@@ -50,7 +49,7 @@ public class Pawn extends Piece {
 
     public List<int[]> calculateTake(int currentRow, int currentCol) {
         take = new ArrayList<>();
-        int direction = color.equals(WHITE) ? -1 : 1;
+        int direction = color.equals("white") ? -1 : 1;
 
         int newRow;
         int newCol;

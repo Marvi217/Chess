@@ -1,9 +1,10 @@
 package projekt.chess.pieces;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Piece {
+public abstract class Piece implements Serializable {
     private final String color;
     private int row;
     private int col;
