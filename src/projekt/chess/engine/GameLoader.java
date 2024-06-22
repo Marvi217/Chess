@@ -48,25 +48,14 @@ public class GameLoader {
 
             timerAndChatPanel.add(timersPanel, BorderLayout.NORTH);
 
-            JScrollPane chatScrollPane = new JScrollPane(chatArea);
-            chatScrollPane.setPreferredSize(new Dimension(400, 150));
-            timerAndChatPanel.add(chatScrollPane, BorderLayout.CENTER);
+            GameGui.panel(mainPanel, timerAndChatPanel, chatArea, chessFrame);
 
-            mainPanel.add(timerAndChatPanel, BorderLayout.LINE_END);
-
-            chessFrame.add(mainPanel);
-            chessFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            chessFrame.pack();
-            chessFrame.setSize(1150, 800);
-            chessFrame.setLocationRelativeTo(null);
-            chessFrame.setVisible(true);
-
-            chessFrame.getRootPane().registerKeyboardAction(e -> Start.showPauseDialog(),
+            chessFrame.getRootPane().registerKeyboardAction(e -> GameGui.showPauseDialog(),
                     KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
             loadedBoard.setChatArea(chatArea);
             loadedBoard.setTheChessPieces();
-            Board.continueGame();
+            Board.continueGame(loadedBoard);
         });
     }
 }

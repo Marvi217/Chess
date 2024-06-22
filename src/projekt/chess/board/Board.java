@@ -27,8 +27,8 @@ public class Board extends JComponent implements Serializable {
         initialize();
         setupMouseListener();
     }
-    public static void continueGame() {
-      //  setupMouseListener();
+    public static void continueGame(Board board) {
+        board.setupMouseListener();
     }
 
     public void setChatArea(JTextArea chatArea) {
@@ -177,7 +177,6 @@ public class Board extends JComponent implements Serializable {
 
     public void setupMouseListener() {
         addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 int tileSize = getSize().width / 8;
                 int row = mouseEvent.getY() / tileSize;
@@ -185,7 +184,7 @@ public class Board extends JComponent implements Serializable {
 
                 if (Board.isValidPosition(row, col)) {
                     if (selectedRow == -1 && selectedCol == -1) {
-                        if (board[row][col] != null) {  // Ensure the selected cell is not empty
+                        if (board[row][col] != null) {
                             try {
                                 checkTurn(row, col);
                                 selectedRow = row;
@@ -403,7 +402,7 @@ public class Board extends JComponent implements Serializable {
     }
 
     private void handleCheckmate() {
-        String winner = isWhiteTurn ? "Black" : WHITE;
+        String winner = isWhiteTurn ? BLACK : WHITE;
         JOptionPane.showMessageDialog(this, winner + " wins!");
         saveChatToFile();
     }
@@ -419,7 +418,7 @@ public class Board extends JComponent implements Serializable {
         try (FileWriter writer = new FileWriter(uniqueFileName)) {
             writer.write(chatArea.getText());
         } catch (IOException e) {
-            System.out.println("Nie udało się");
+            System.out.println("Nie udało się zapisać czatu: " + e.getMessage());
         }
     }
     private void saveChatToGameFile(File gameFile) {
@@ -427,7 +426,7 @@ public class Board extends JComponent implements Serializable {
         try (FileWriter writer = new FileWriter(chatFileName)) {
             writer.write(chatArea.getText());
         } catch (IOException e) {
-            System.out.println("Failed to save chat: " + e.getMessage());
+            System.out.println("Nie udało się zapisać czatu: " + e.getMessage());
         }
     }
     public void saveGame() {
@@ -435,9 +434,9 @@ public class Board extends JComponent implements Serializable {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(uniqueFileName))) {
             oos.writeObject(this);
             saveChatToGameFile(new File(uniqueFileName)); // Save chat along with the game
-            JOptionPane.showMessageDialog(this, "Game saved successfully!");
+            JOptionPane.showMessageDialog(this, "Gra zapisana!");
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Nieudało się zapisać gry: " + e.getMessage(), "Bład", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -451,27 +450,9 @@ public class Board extends JComponent implements Serializable {
             chatArea.setText(chatContent);
 
         } catch (IOException | ClassNotFoundException e) {
-            JOptionPane.showMessageDialog(null, "Error loading game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Nie udało się załadować gry: " + e.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
         }
         return loadedBoard;
-    }
-
-
-    private void loadChatFromFile(File file) {
-        if (chatArea == null) {
-            System.out.println("JTextArea chatArea is not initialized!");
-            return;
-        }
-        StringBuilder content = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
-            }
-        } catch (IOException e) {
-            System.out.println("Failed to load chat: " + e.getMessage());
-        }
-        chatArea.setText(content.toString());
     }
 
     public static void loadSave(JFrame frame) {
@@ -485,7 +466,7 @@ public class Board extends JComponent implements Serializable {
                 String fileContents = readFile(selectedFile);
                 displayFileContents(frame, fileContents);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(frame, "Error loading file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Błąd załadowania pliku: " + ex.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -507,6 +488,6 @@ public class Board extends JComponent implements Serializable {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setPreferredSize(new Dimension(400, 300));
 
-        JOptionPane.showMessageDialog(frame, scrollPane, "File Contents", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(frame, scrollPane, "Zapis czatu", JOptionPane.PLAIN_MESSAGE);
     }
 }

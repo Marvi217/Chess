@@ -53,6 +53,7 @@ public class King extends Piece implements Serializable {
 
     @Override
     public void calculateThreatenedMoves(Piece[][] board, int currentRow, int currentCol) {
+        threatenedMoves.clear();
         List<int[]> validMoves = calculateValidMoves(board, currentRow, currentCol);
         threatenedMoves = new ArrayList<>();
         for (int[] move : validMoves) {

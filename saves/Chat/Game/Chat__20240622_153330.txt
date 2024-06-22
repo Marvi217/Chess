@@ -1,0 +1,1 @@
+white Pawn przenosi się z (6,5) na (4,5)
