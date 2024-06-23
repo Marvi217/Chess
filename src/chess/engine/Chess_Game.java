@@ -23,7 +23,7 @@ public class Chess_Game {
         JButton startButton = new JButton("Nowa gra");
         startButton.setPreferredSize(new Dimension(120, 40));
         startButton.addActionListener(e -> {
-            GameGui.startGame();
+            startGame();
             startFrame.setVisible(false);
         });
 
@@ -46,6 +46,9 @@ public class Chess_Game {
 
         startFrame.add(startPanel);
         startFrame.setVisible(true);
+    }
+    private static void startGame() {
+        GameGui.startGame();
     }
     private static void loadSave() {
         Board.loadSave(startFrame);

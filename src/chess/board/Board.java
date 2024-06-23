@@ -22,7 +22,7 @@ public class Board extends JComponent implements Serializable, Saveable {
     private int selectedRow = -1;
     private int selectedCol = -1;
     private JTextArea chatArea;
-    private boolean gameOver = false;
+    private boolean gameover = false;
 
     public Board() {
         initialize();
@@ -179,6 +179,9 @@ public class Board extends JComponent implements Serializable, Saveable {
     public void setupMouseListener() {
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent mouseEvent) {
+                if(gameover){
+                    return;
+                }
                 int tileSize = getSize().width / 8;
                 int row = mouseEvent.getY() / tileSize;
                 int col = mouseEvent.getX() / tileSize;
@@ -342,9 +345,8 @@ public class Board extends JComponent implements Serializable, Saveable {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece != null && !piece.getColor().equals(king.getColor())) {
-                    if (canAttackEnemyKing(kingRow, kingCol, i, j, piece)) return true;
-                }
+                if (piece != null && !piece.getColor().equals(king.getColor()) && canAttackEnemyKing(kingRow, kingCol, i, j, piece))
+                    return true;
             }
         }
         return false;
@@ -380,9 +382,8 @@ public class Board extends JComponent implements Serializable, Saveable {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece != null && !piece.getColor().equals(color)) {
-                    if (canAttackEnemyKing(row, col, i, j, piece)) return true;
-                }
+                if (piece != null && !piece.getColor().equals(color) && canAttackEnemyKing(row, col, i, j, piece))
+                    return true;
             }
         }
         return false;
@@ -423,7 +424,7 @@ public class Board extends JComponent implements Serializable, Saveable {
     private void handleCheckmate() {
         String winner = isWhiteTurn ? BLACK : WHITE;
         JOptionPane.showMessageDialog(this, winner + " wygrywa!");
-        gameOver = true;
+        gameover = true;
         saveChatToFile();
     }
 
