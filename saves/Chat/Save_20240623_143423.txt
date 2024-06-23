@@ -1,0 +1,66 @@
+white Pawn przenosi się z (6,4) na (4,4)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+black Pawn przenosi się z (1,5) na (3,5)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+white Pawn bije black Pawn
+white Pawn przenosi się z (4,4) na (3,5)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+black Pawn przenosi się z (1,4) na (2,4)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+white Pawn przenosi się z (3,5) na (2,5)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+black Pawn przenosi się z (2,4) na (3,4)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+white Pawn przenosi się z (2,5) na (1,5)
+black król jest zagrożony!
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+
+ !!!!!! BŁĄD 
+Tura przeciwnika 
+ !!!!!! BŁĄD 
+ 
+
+black Pawn przenosi się z (3,4) na (4,4)
+
+ !!!!!! BŁĄD 
+Pawn nie może wykonać tego ruchu 
+ !!!!!! BŁĄD 
+ 
+
+white Pawn bije black King
+white Pawn przenosi się z (1,5) na (0,4)

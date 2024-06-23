@@ -1,0 +1,2 @@
+white Pawn przenosi się z (6,4) na (4,4)
+black Pawn przenosi się z (1,5) na (3,5)
